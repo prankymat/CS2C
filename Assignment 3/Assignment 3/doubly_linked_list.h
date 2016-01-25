@@ -34,13 +34,24 @@ public:
       iterator() : reversed(false), current(nullptr), previous(nullptr) {};
       // Prefix --
       iterator& operator--() {
-         if (!reversed) {
-            previous = current;
-            current = current ? current->previous : nullptr;
+
+         if (!current && previous) {
+            // is end
+            current = previous;
+            if (!reversed) {
+               previous = previous ? previous->previous : nullptr;
+            } else {
+               previous = (previous ? previous->next : nullptr);
+            }
          } else {
             previous = current;
-            current = (current ? current->next : nullptr);
+            if (!reversed) {
+               current = current ? current->previous : nullptr;
+            } else {
+               current = (current ? current->next : nullptr);
+            }
          }
+
          return *this;
       };
       // Prefix ++

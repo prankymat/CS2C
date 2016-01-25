@@ -26,10 +26,11 @@ int main(int argc, const char * argv[]) {
    dList.push_back(2);
    dList.push_back(3);
 
-   dList.remove(3);
+//   dList.erase(dList.begin());
+   dList.erase(------dList.end());
 
    for (auto itr : dList) {
-      cout << "here" << itr;
+      cout << itr;
    }
 
 //   int *a = new int(3);
