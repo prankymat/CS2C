@@ -51,8 +51,8 @@ public:
             current = (current ? current->next : nullptr);
          } else {
             // go left
-            current = current ? current->previous : nullptr;
             previous = current;
+            current = current ? current->previous : nullptr;
          }
          return *this;
       };
