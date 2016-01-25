@@ -58,14 +58,18 @@ public:
       };
       T& operator*() { return current->obj; };
       const T& operator*() const { return (const T&)current->obj; };
-      bool operator!=(const iterator& other) const { return current != other.current && previous != other.previous; };
+      bool operator!=(const iterator& other) const { return current != other.current
+                                                         || previous != other.previous
+                                                         || reversed != other.reversed;
+                                                   };
 
       friend class DoublyLinkedList;
    };
 
 
    ~DoublyLinkedList() {
-      for (iterator itr = begin(); itr != end(); ++itr) {
+      auto iter_end = end();
+      for (iterator itr = begin(); itr != ++iter_end; ++itr) {
          erase(itr);
       }
    };
@@ -96,10 +100,10 @@ public:
       }
    };
    void remove(const T& val) {
-      auto itr_end = end();
-      for (auto itr = begin(); itr != itr_end;) {
+      for (iterator itr = begin(); itr != end();) {
          if (*itr == val) {
             erase(itr);
+            itr = begin();
          } else {
             ++itr;
          }
@@ -107,86 +111,32 @@ public:
    };
 
    iterator erase(iterator position) {
-      if (!position.current && position.previous) {
-         // is end
-         return position;
-      }
-
       node *to_be_deleted = position.current;
-      if (!position.previous && position.current) {
-         // is front
-         node *next = position.current->next;
-         front = next;
 
-         // assign only if front is not null
-         front && (front->previous = nullptr);
+      node *head = position.current ? position.current->previous : nullptr;
+      node *tail = position.current ? position.current->next : nullptr;
 
-         // update position
-         position.current = front;
-         position.previous = nullptr;
-      } else if (position.current && !position.current->next) {
-         // is back
-         node *prev = position.previous;
-         back = prev;
+      head && (head->next = tail);
+      tail && (tail->previous = head);
 
-         to_be_deleted = prev->next;
-         prev->next = nullptr;
 
-         // update position
-         position.current = nullptr;
-         position.previous = back;
-      } else {
-         // is middle
-         node *head = position.previous;
-         node *tail = position.current->next;
-         head->next = tail;
-         tail->previous = head;
-
-         // update position
+      if (!position.reversed) {
          position.current = tail;
          position.previous = head;
+      } else {
+         position.current = head;
+         position.previous = tail;
+      }
+
+      if (!position.previous && position.current) {
+         front = position.current;
+      } else if (!position.current && position.previous) {
+         back = position.previous;
       }
 
       --size_;
       delete to_be_deleted;
       return position;
-
-//      node *cur = position.current;
-//      if (cur == nullptr && position.previous != nullptr) {
-//         // is end
-//         return position;
-//      } else if (position.previous == nullptr) {
-//         // is front
-//         if (size_ == 1) {
-//            // only one element
-//            front = back = nullptr;
-//            position.current = nullptr;
-//            position.previous = nullptr;
-//         } else {
-//            // has linked nodes
-//            node *next = cur->next;
-//            next->previous = nullptr;
-//            front = next;
-//            position.current = front;
-//            position.previous = nullptr;
-//         }
-//      } else if (cur->next == nullptr) {
-//         // is back
-//         node *previous = position.previous;
-//         position.previous->next = nullptr;
-//         back = previous;
-//         position.current = previous;
-//         position.previous = back->previous;
-//      } else {
-//         // is middle
-//         position.previous->next = cur->next;
-//         cur->next->previous = position.previous;
-//         position.current = cur->next;
-//         position.previous = cur->previous;
-//      }
-//      --size_;
-//      delete cur;
-//      return position;
    };
    iterator insert(iterator position, const T& value) {
       node *cur = position.current;

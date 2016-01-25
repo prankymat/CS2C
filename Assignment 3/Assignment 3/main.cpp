@@ -25,6 +25,21 @@ int main(int argc, const char * argv[]) {
    dList.push_back(1);
    dList.push_back(2);
    dList.push_back(3);
+
+   dList.remove(3);
+
+   for (auto itr : dList) {
+      cout << "here" << itr;
+   }
+
+//   int *a = new int(3);
+//   int *b = a;
+//   int c = 10;
+//
+//   a = &c;
+//   delete b;
+
+
 //
 //   dList.erase(dList.begin());
 //   for (auto itr : dList) {
@@ -45,9 +60,9 @@ int main(int argc, const char * argv[]) {
 //      cout << itr << endl;
 //   }
 
-   for (auto itr = dList.rbegin(); itr != dList.rend(); ++itr) {
-      cout << *itr << endl;
-   }
+//   for (auto itr = dList.rbegin(); itr != dList.rend(); ++itr) {
+//      cout << *itr << endl;
+//   }
 
 
 
@@ -168,6 +183,14 @@ int main(int argc, const char * argv[]) {
 
 
 //   vector<int> v;
+//   v.push_back(1);
+//   v.push_back(2);
+//   v.push_back(3);
+//
+//   for (auto itr = v.begin(); itr != ++v.end(); ++itr) {
+//      auto i = v.erase(itr);
+//      cout << *i << endl;
+//   }
 //   *v.end();
 //
 //   v.push_back(1);
