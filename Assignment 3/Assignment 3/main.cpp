@@ -9,6 +9,7 @@
 #include <iostream>
 
 #include <vector>
+#include <list>
 
 #include "doubly_linked_list.h"
 
@@ -22,16 +23,45 @@ int main(int argc, const char * argv[]) {
 //      dList.push_back(i);
 //   }
 
-   dList.push_back(1);
-   dList.push_back(2);
-   dList.push_back(3);
+//   dList.push_back(1);
+//   dList.push_back(2);
+//   dList.push_back(3);
+//
+//   auto itr = dList.insert(------dList.end(), 10);
+//   cout << "returned: " << *itr << endl;
+//   itr = dList.insert(------dList.end(), 10);
+//   cout << "returned: " << *itr << endl;
+//   itr = dList.insert(------dList.end(), 10);
+//   cout << "returned: " << *itr << endl;
+//   itr = dList.insert(------dList.end(), 10);
+//   cout << "returned: " << *itr << endl;
+//   itr = dList.insert(------dList.end(), 10);
+//   cout << "returned: " << *itr << endl;
+//
+   auto itr = dList.insert(++++++++++++++++++dList.begin(), 1000);
+   cout << "returned: " << *itr << endl;
+
 
 //   dList.erase(dList.begin());
-   dList.erase(------dList.end());
-
+//   dList.erase(------dList.end());
+//
    for (auto itr : dList) {
-      cout << itr;
+      cout << itr << endl;
    }
+//
+//   list<int> v;
+//   v.push_back(1);
+//   v.push_back(2);
+//   v.push_back(3);
+//
+//   v.insert(v.end(), 10);
+//
+//   for (auto itr : v) {
+//      cout << itr;
+//    }
+//
+//   auto itr = v.insert(v.end(), 10);
+//   cout << *itr;
 
 //   int *a = new int(3);
 //   int *b = a;

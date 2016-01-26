@@ -34,7 +34,6 @@ public:
       iterator() : reversed(false), current(nullptr), previous(nullptr) {};
       // Prefix --
       iterator& operator--() {
-
          if (!current && previous) {
             // is end
             current = previous;
@@ -114,7 +113,7 @@ public:
       for (iterator itr = begin(); itr != end();) {
          if (*itr == val) {
             erase(itr);
-            itr = begin();
+            itr = begin(); // list modified, reset to begin
          } else {
             ++itr;
          }
@@ -150,28 +149,51 @@ public:
       return position;
    };
    iterator insert(iterator position, const T& value) {
-      node *cur = position.current;
-      if (position.previous == nullptr && position.current != nullptr) {
+      // empty list
+      if (size_ == 0) {
+         push_back(value);
+         position.current = front;
+         position.previous = nullptr;
+         return position;
+      }
+
+      // iterator out of bound
+      if (!position.current && !position.previous) {
+         position = position.reversed ? rend() : end();
+      }
+
+      // do insert
+      if (position.current && !position.current->previous) {
          // is begin
          node *temp = new node(nullptr, front, value);
          front->previous = temp;
+
          front = temp;
-         cur = temp;
-      } else if (position.current == nullptr && position.previous != nullptr) {
+         position.current = front;
+         position.previous = nullptr;
+      } else if (!position.current && position.previous) {
          // is end
          node *temp = new node(back, nullptr, value);
          back->next = temp;
+
          back = temp;
-         cur = temp;
+         position.current = back;
+         position.previous = back->previous;
       } else {
          // is middle
-         node *temp = new node(cur->previous, cur, value);
-         cur->previous->next = temp;
-         cur->previous = temp;
-         cur = temp;
+         node *head = position.current->previous;
+         node *tail = position.current;
+
+         node *temp = new node(head, tail, value);
+
+         head && (head->next = temp);
+         tail && (tail->previous = temp);
+
+         position.current = temp;
+         position.previous = temp->previous;
       }
       ++size_;
-      return iterator(position.previous, cur, position.reversed);
+      return position;
    };
 
    iterator begin() { return iterator(nullptr, front, false); };
