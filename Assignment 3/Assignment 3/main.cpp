@@ -23,7 +23,7 @@ int main(int argc, const char * argv[]) {
 //      dList.push_back(i);
 //   }
 
-//   dList.push_back(1);
+   dList.push_back(1);
 //   dList.push_back(2);
 //   dList.push_back(3);
 //
@@ -40,6 +40,13 @@ int main(int argc, const char * argv[]) {
 //
    auto itr = dList.insert(++++++++++++++++++dList.begin(), 1000);
    cout << "returned: " << *itr << endl;
+
+   DoublyLinkedList<int> another(dList);
+
+   for (auto itr : another) {
+      cout << itr;
+   }
+
 
 
 //   dList.erase(dList.begin());

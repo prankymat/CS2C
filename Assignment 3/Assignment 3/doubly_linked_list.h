@@ -66,6 +66,7 @@ public:
          }
          return *this;
       };
+
       T& operator*() { return current->obj; };
       const T& operator*() const { return (const T&)current->obj; };
       bool operator!=(const iterator& other) const { return current != other.current
@@ -79,15 +80,15 @@ public:
 
    ~DoublyLinkedList() {
       auto iter_end = end();
-      for (iterator itr = begin(); itr != ++iter_end; ++itr) {
+      for (iterator itr = begin(); itr != iter_end; ++itr) {
          erase(itr);
       }
    };
 
    DoublyLinkedList() : front(nullptr), back(nullptr), size_(0) {};
    DoublyLinkedList(const DoublyLinkedList& other) {
-      for (auto itr : other.begin()) {
-         push_back(*itr);
+      for (const T& itr : other) {
+         push_back(itr);
       }
    };
    DoublyLinkedList(std::initializer_list<T> list) : DoublyLinkedList() {
@@ -196,10 +197,10 @@ public:
       return position;
    };
 
-   iterator begin() { return iterator(nullptr, front, false); };
-   iterator rbegin() { return iterator(nullptr, back, true); };
-   iterator end() { return iterator(back, nullptr, false); };
-   iterator rend() { return iterator(front, nullptr, true); };
+   iterator begin() const { return iterator(nullptr, front, false); };
+   iterator rbegin() const { return iterator(nullptr, back, true); };
+   iterator end() const { return iterator(back, nullptr, false); };
+   iterator rend() const { return iterator(front, nullptr, true); };
 };
 
 #endif  // _DOUBLY_LINKED_LIST_H_
