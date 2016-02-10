@@ -21,13 +21,6 @@ struct AVLTreeNode {
 
    bool isNode() { return !left && !right; };
 
-//   int difference() {
-//      int left_height = left ? left->height : 0;
-//      int right_height = right ? right->height : 0;
-//
-//      return right_height - left_height;
-//   };
-
    // Note that the height of an empty tree is 0.
    int height;
 
@@ -44,70 +37,83 @@ template <typename Key, typename Value>
 class AVLTree {
 
 private:
-   int height(AVLTreeNode<Key, Value>* node) {
-      int node_height = 0;
+   void updateHeightUpwards(AVLTreeNode<Key, Value>* node) {
       if (node) {
-         int l_height = height (node->left);
-         int r_height = height (node->right);
-         int max_height = std::max(l_height, r_height);
-         node_height = max_height + 1;
+         int lHeight = node->left ? node->left->height : 0;
+         int rHeight = node->right ? node->right->height : 0;
+         node->height = std::max(lHeight, rHeight) + 1;
+         updateHeightUpwards(node->parent);
       }
-      return node_height;
    };
 
-   int rlDifference(AVLTreeNode<Key, Value>* node) {
-      return height(node->left) - height(node->right);
-
+   int lrDifference(AVLTreeNode<Key, Value>* node) {
+      int leftHeight = node && node->left ? node->left->height : 0;
+      int rightHeight = node && node->right ? node->right->height : 0;
+      return leftHeight - rightHeight;
    };
 
    AVLTreeNode<Key, Value>* ll_rotation(AVLTreeNode<Key, Value>* parent) {
-      AVLTreeNode<Key, Value>*temp;
-      temp = parent->left;
+      AVLTreeNode<Key, Value>*temp = parent->left;
       parent->left = temp->right;
       temp->right = parent;
+
+      temp->parent = parent->parent;
+      parent->parent = temp;
       return temp;
    };
 
    AVLTreeNode<Key, Value>* rr_rotation(AVLTreeNode<Key, Value>* parent) {
-      AVLTreeNode<Key, Value>*temp;
-      temp = parent->right;
+      AVLTreeNode<Key, Value>*temp = parent->right;
       parent->right = temp->left;
       temp->left = parent;
+
+      temp->parent = parent->parent;
+      parent->parent = temp;
       return temp;
    };
 
    AVLTreeNode<Key, Value>*lr_rotation(AVLTreeNode<Key, Value>* parent) {
-      AVLTreeNode<Key, Value>*temp;
-      temp = parent->left;
-      parent->left = rr_rotation (temp);
+      AVLTreeNode<Key, Value>*temp = parent->left;
+      temp = rr_rotation(temp);
+
+      temp->parent = parent;
+      parent->left = temp;
       return ll_rotation (parent);
    };
 
    AVLTreeNode<Key, Value>*rl_rotation(AVLTreeNode<Key, Value>* parent) {
-      AVLTreeNode<Key, Value>*temp;
-      temp = parent->right;
-      parent->right = ll_rotation (temp);
+      AVLTreeNode<Key, Value>*temp = parent->right;
+
+      temp = ll_rotation(temp);
+
+      temp->parent = parent;
+      parent->right = temp;
+
       return rr_rotation (parent);
    };
 
    AVLTreeNode<Key, Value>* balance(AVLTreeNode<Key, Value>* node) {
-      int rlFactor = rlDifference(node);
-      if (rlFactor > 1) {
+      int lrFactor = lrDifference(node);
+
+      if (lrFactor > 1) {
          // Left-Left or Left-Right
-         if (rlDifference(node->left) > 0) {
+         if (lrDifference(node->left) > 0) {
             node = ll_rotation(node);
          } else {
             node = lr_rotation(node);
          }
-      } else if (rlFactor < -1) {
+      } else if (lrFactor < -1) {
          // Right-Left or Right-Right
-         if (rlDifference(node->right) > 0) {
+         if (lrDifference(node->right) > 0) {
             node = rl_rotation(node);
          } else {
             node = rr_rotation(node);
          }
       }
 
+
+      updateHeightUpwards(node->left);
+      updateHeightUpwards(node->right);
       return node;
    };
 
@@ -140,22 +146,25 @@ private:
       if (!node) {
          // empty node, create a new node.
          node = new AVLTreeNode<Key, Value>(key, value, nullptr);
+         node->height = 1;
+
       } else if (*node > key) {
          // key < node, insert to node left
          node->left = insert(key, value, node->left);
-         node->parent = node;
+
+         node->left->parent = node;
 
          // balance the inserted node
          node = balance(node);
       } else if (*node < key) {
-         // key > node, inswer to node right
-         node->right = insert(key, value, node->left);
-         node->parent = node;
+         // key > node, insert to node right
+         node->right = insert(key, value, node->right);
+
+         node->right->parent = node;
 
          // balance the inserted node
          node = balance(node);
       }
-
 
       return node;
    };
@@ -172,10 +181,7 @@ public:
    // Insert a value, while making sure the tree is still a binary search tree.
    // This assumes that the key does not exist in the tree.
    void insert(const Key& key, const Value& value) {
-      if (!root) {
-         root = new AVLTreeNode<Key, Value>(key, value, nullptr);
-      }
-      insert(key, value, root);
+      root = insert(key, value, root);
    };
 
    // Given a key, find the corresponding value.
