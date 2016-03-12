@@ -17,6 +17,14 @@ struct AVLTreeNode {
       return left == nullptr && right == nullptr;
    };
 
+   bool isLeftChild() {
+      return parent && parent->left == this;
+   };
+
+   bool isRightChild() {
+      return parent && parent->right == this;
+   };
+
    ~AVLTreeNode() {
       delete left;
       delete right;
@@ -27,93 +35,11 @@ template <typename Key, typename Value>
 class AVLTree {
 
 private:
-   void updateHeightUpwards(AVLTreeNode<Key, Value>* node) {
-      if (node) {
-         int lHeight = node->left ? node->left->height : 0;
-         int rHeight = node->right ? node->right->height : 0;
-         node->height = std::max(lHeight, rHeight) + 1;
-         updateHeightUpwards(node->parent);
-      }
-   };
-
    int lrDifference(AVLTreeNode<Key, Value>* node) {
       int leftHeight = node && node->left ? node->left->height : 0;
       int rightHeight = node && node->right ? node->right->height : 0;
       return leftHeight - rightHeight;
    };
-
-   AVLTreeNode<Key, Value>* ll_rotation(AVLTreeNode<Key, Value>* parent) {
-      AVLTreeNode<Key, Value>*temp = parent->left;
-      parent->left = temp->right;
-      temp->right = parent;
-
-      temp->parent = parent->parent;
-      parent->parent = temp;
-      return temp;
-   };
-
-   AVLTreeNode<Key, Value>* rr_rotation(AVLTreeNode<Key, Value>* parent) {
-      AVLTreeNode<Key, Value>*temp = parent->right;
-      parent->right = temp->left;
-      temp->left = parent;
-
-      temp->parent = parent->parent;
-      parent->parent = temp;
-      return temp;
-   };
-
-   AVLTreeNode<Key, Value>*lr_rotation(AVLTreeNode<Key, Value>* parent) {
-      AVLTreeNode<Key, Value>*temp = parent->left;
-      temp = rr_rotation(temp);
-
-      temp->parent = parent;
-      parent->left = temp;
-      return ll_rotation (parent);
-   };
-
-   AVLTreeNode<Key, Value>*rl_rotation(AVLTreeNode<Key, Value>* parent) {
-      AVLTreeNode<Key, Value>*temp = parent->right;
-
-      temp = ll_rotation(temp);
-
-      temp->parent = parent;
-      parent->right = temp;
-
-      return rr_rotation (parent);
-   };
-
-   void fixParents(AVLTreeNode<Key, Value> *ptr, AVLTreeNode<Key, Value>* parent) {
-      if (ptr) {
-         fixParents(ptr->left, ptr);
-         ptr->parent = parent;
-         fixParents(ptr->right, ptr);
-      }
-   }
-
-   AVLTreeNode<Key, Value>* balance(AVLTreeNode<Key, Value>* node) {
-      int lrFactor = lrDifference(node);
-
-      if (lrFactor > 1) {
-         // Left-Left or Left-Right
-         if (lrDifference(node->left) > 0) {
-            node = ll_rotation(node);
-         } else {
-            node = lr_rotation(node);
-         }
-      } else if (lrFactor < -1) {
-         // Right-Left or Right-Right
-         if (lrDifference(node->right) > 0) {
-            node = rl_rotation(node);
-         } else {
-            node = rr_rotation(node);
-         }
-      }
-
-      updateHeightUpwards(node->left);
-      updateHeightUpwards(node->right);
-      return node;
-   };
-
 
    AVLTreeNode<Key, Value>* getNode(const Key& key, AVLTreeNode<Key, Value>* tree) const {
       if (tree->key == key) {
@@ -140,32 +66,156 @@ private:
       }
    };
 
-   AVLTreeNode<Key, Value>* insert(const Key& key, const Value& value, AVLTreeNode<Key, Value>* node) {
-      if (!node) {
-         // empty node, create a new node.
-         node = new AVLTreeNode<Key, Value>(key, value, nullptr);
-         node->height = 1;
 
-      } else if (key < node->key) {
-         // key < node, insert to node left
-         node->left = insert(key, value, node->left);
-
-         node->left->parent = node;
-
-         // balance the inserted node
-         node = balance(node);
-      } else if (key > node->key) {
-         // key > node, insert to node right
-         node->right = insert(key, value, node->right);
-
-         node->right->parent = node;
-
-         // balance the inserted node
-         node = balance(node);
+   void insert(const Key& key, const Value& value, AVLTreeNode<Key, Value>* node) {
+      if (key < node->key) {
+         // Insert to left subtree
+         if (node->left) {
+            // Has child, go left
+            insert(key, value, node->left);
+         } else {
+            // No more child, insert here
+            auto child = new AVLTreeNode<Key, Value>(key, value, node);
+            child->height = 1;
+            node->left = child;
+            balanceUpwards(node->left);
+         }
+      } else {
+         // Insert to right subtree
+         if (node->right) {
+            // Has child, go right
+            insert(key, value, node->right);
+         } else {
+            // No more child, insert here
+            auto child = new AVLTreeNode<Key, Value>(key, value, node);
+            child->height = 1;
+            node->right = child;
+            balanceUpwards(node->right);
+         }
       }
-      
+   };
+
+   int height(AVLTreeNode<Key, Value>* node) {
+      int h = 0;
+      if (node) {
+         int l_height = height(node->left);
+         int r_height = height(node->right);
+         int max_height = std::max(l_height, r_height);
+         h = max_height + 1;
+      }
+      return h;
+   }
+
+   void balanceUpwards(AVLTreeNode<Key, Value>* node) {
+      if (node) {
+         node->height = height(node);
+
+         fixHeight(root);
+
+         root = balance(root);
+
+         fixHeight(root);
+
+         balanceUpwards(node->parent);
+      }
+   }
+
+
+   void updateHeightUpwards(AVLTreeNode<Key, Value>* node) {
+      if (node) {
+         int lHeight = node->left ? node->left->height : 0;
+         int rHeight = node->right ? node->right->height : 0;
+         node->height = std::max(lHeight, rHeight) + 1;
+         updateHeightUpwards(node->parent);
+      }
+   };
+
+
+   AVLTreeNode<Key, Value>* ll_rotation(AVLTreeNode<Key, Value>* parent) {
+      auto temp = parent->left;
+      parent->left = temp->right;
+
+      parent->left && (parent->left->parent = temp);
+
+      temp->right = parent;
+
+      temp->right && (temp->right->parent = parent->parent);
+      return temp;
+   };
+
+   AVLTreeNode<Key, Value>* rr_rotation(AVLTreeNode<Key, Value>* parent) {
+      auto temp = parent->right;
+      parent->right = temp->left;
+
+      (parent->right) && (parent->right->parent = temp);
+
+      temp->left = parent;
+
+      (temp->left) && (temp->left->parent = parent->parent);
+      return temp;
+   };
+
+   AVLTreeNode<Key, Value>*lr_rotation(AVLTreeNode<Key, Value>* parent) {
+      auto temp = rr_rotation(parent->left);
+      temp->parent = parent;
+      parent->left = temp;
+
+      temp = ll_rotation(parent);
+      temp->parent = parent->parent;
+      return temp;
+   };
+
+   AVLTreeNode<Key, Value>*rl_rotation(AVLTreeNode<Key, Value>* parent) {
+      auto temp = ll_rotation(parent->right);
+      temp->parent = parent;
+
+      parent->right = temp;
+
+      temp = rr_rotation (parent);
+      temp->parent = parent->parent;
+      return temp;
+   };
+
+   AVLTreeNode<Key, Value>* balance(AVLTreeNode<Key, Value>* node) {
+      int lrFactor = lrDifference(node);
+      if (lrFactor > 1) {
+         // Left-Left or Left-Right
+         if (lrDifference(node->left) > 0) {
+            // Left-Left
+            printf("Balance left left\n");
+            auto temp = ll_rotation(node);
+            temp->parent = node->parent;
+            node = temp;
+         } else {
+            // Left-Right
+            printf("Balance left right\n");
+            auto temp = lr_rotation(node);
+            temp->parent = node->parent;
+            node = temp;
+         }
+      } else if (lrFactor < -1) {
+         // Right-Left or Right-Right
+         if (lrDifference(node->right) > 0) {
+            // Right-Right
+            printf("Balance right right\n");
+            auto temp = rl_rotation(node);
+            temp->parent = node->parent;
+            node = temp;
+         } else {
+            // Right-Left
+            printf("Balance right left\n");
+            auto temp = rr_rotation(node);
+            temp->parent = node->parent;
+            node = temp;
+         }
+      } else {
+         printf("Didn't need to balance at %d\n", node ? node->key : 0);
+      }
+
       return node;
    };
+
+
 
    AVLTreeNode<Key, Value>* smallestOfNode(AVLTreeNode<Key, Value>* node) {
       if (node && !node->left) {
@@ -181,16 +231,35 @@ private:
       return biggestOfNode(node->right);
    };
 
-   AVLTreeNode<Key, Value>* removeNode(AVLTreeNode<Key, Value>* target) {
+   void fixHeight(AVLTreeNode<Key, Value>* node) {
+      if (node) {
+         fixHeight(node->left);
+         node->height = height(node);
+         fixHeight(node->right);
+      }
+   }
+
+   void fixParents(AVLTreeNode<Key, Value>* node, AVLTreeNode<Key, Value>* parent) {
+      if (node) {
+         fixParents(node->left, node);
+         node->parent = parent;
+         fixParents(node->right, node);
+      }
+   }
+
+
+   void removeNode(AVLTreeNode<Key, Value>* target) {
+      fixParents(root, nullptr);
+      fixHeight(root);
       if (target->isLeaveNode()) {
          // Handle leaves case
          AVLTreeNode<Key, Value>* targetParent = target->parent;
          if (targetParent) {
             // at bottom
-            if (targetParent->right == target) {
+            if (target->isRightChild()) {
                // right side of parent
                targetParent->right = nullptr;
-            } else {
+            } else if (target->isLeftChild()) {
                // left side of parent
                targetParent->left = nullptr;
             }
@@ -200,8 +269,7 @@ private:
          }
 
          delete target;
-         printf("Returning targetParent: %d\n", targetParent->key);
-         return targetParent;
+         balanceUpwards(targetParent);
       } else {
          // Handle stems case
          AVLTreeNode<Key, Value>* replacement = nullptr;
@@ -216,7 +284,7 @@ private:
          target->key = replacement->key;
          target->value = replacement->value;
 
-         return removeNode(replacement);
+         removeNode(replacement);
       }
    };
 
@@ -232,7 +300,12 @@ public:
    // Insert a value, while making sure the tree is still a binary search tree.
    // This assumes that the key does not exist in the tree.
    void insert(const Key& key, const Value& value) {
-      root = insert(key, value, root);
+      if (root) {
+         insert(key, value, root);
+      } else {
+         root = new AVLTreeNode<Key, Value>(key, value, nullptr);
+         root->height = 1;
+      }
    };
 
    // Given a key, find the corresponding value.
@@ -246,21 +319,7 @@ public:
    // This assumes that the key exists.
    void remove(const Key& key) {
       AVLTreeNode<Key, Value>* target = getNode(key, root);
-      AVLTreeNode<Key, Value>* targetParent = removeNode(target);
-
-      // Balance upwards
-      while (targetParent) {
-         if (targetParent->left == target) {
-            targetParent->left = balance(targetParent->left);
-         } else if (targetParent->right == target) {
-            targetParent->right = balance(targetParent->right);
-         } else {
-            printf("OH SHIT SOMETHING ELSE.\n");
-         }
-
-         // go up one level
-         targetParent = targetParent->parent;
-      }
+      removeNode(target);
    };
 
    // Given a callable, that takes a Key and Value, call that callable
@@ -270,6 +329,23 @@ public:
    void for_each_key_val(const Callable& callable) {
       for_each_key_val(callable, root);
    };
+
+   void display(AVLTreeNode<Key, Value> *ptr, int level)
+   {
+      int i;
+      if (ptr!=NULL)
+      {
+         display(ptr->right, level + 1);
+         printf("\n");
+         if (ptr == root)
+            std::cout<<"Root -> ";
+         for (i = 0; i < level && ptr != root; i++)
+            std::cout<<"        ";
+         //         std::cout<<ptr->key;
+         printf("(%d:%d)", ptr->key, ptr->height);
+         display(ptr->left, level + 1);
+      }
+   }
 };
 
 
