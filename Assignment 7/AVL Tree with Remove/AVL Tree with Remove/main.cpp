@@ -29,13 +29,22 @@ int main() {
 //      {13, "William Murphy"},
 //   };
 
+//   std::vector<std::pair<int, std::string> > professors = {
+//      {5, "Rahul Agarwal"},
+//      {1, "Thomas Riordan"},
+//      {4, "Hadeel Ammari"},
+//      {3, "Viet Trinh"},
+//      {2, "Bita Mazloom"},
+//   };
+
    std::vector<std::pair<int, std::string> > professors = {
-      {5, "Rahul Agarwal"},
-      {1, "Thomas Riordan"},
-      {4, "Hadeel Ammari"},
-      {3, "Viet Trinh"},
-      {2, "Bita Mazloom"},
+      {1, "Rahul Agarwal"},
+      {2, "Thomas Riordan"},
+      {3, "Hadeel Ammari"},
+      {4, "Viet Trinh"},
+      {5, "Bita Mazloom"},
    };
+
 
 //   std::shuffle(professors.begin(), professors.end(), r);
 

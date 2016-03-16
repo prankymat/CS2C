@@ -25,7 +25,7 @@
 /* Begin PBXFileReference section */
 		3915B2031C77B81800C8E27E /* AVL Tree with Remove */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "AVL Tree with Remove"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3915B2061C77B81800C8E27E /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		3915B20D1C77B8AA00C8E27E /* avl_tree.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = avl_tree.h; sourceTree = "<group>"; };
+		3915B20D1C77B8AA00C8E27E /* avl_tree.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = avl_tree.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -239,6 +239,7 @@
 				3915B20C1C77B81800C8E27E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
