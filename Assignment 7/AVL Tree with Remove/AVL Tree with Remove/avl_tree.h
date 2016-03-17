@@ -116,7 +116,6 @@ private:
       }
    };
 
-#define getNodeOrNullptr(node,direction) (node ? node->direction : nullptr)
 #define setOnlyNotNull(target,direction,node) (target && (target->direction = node))
    void balance(Node* node) {
       if (!node) {
@@ -139,22 +138,22 @@ private:
             // Left-Left
             nodes[0] = node;
             nodes[2] = node->left;
-            nodes[1] = getNodeOrNullptr(nodes[2],left);
+            nodes[1] = nodes[2]->left;
 
-            subtrees[0] = getNodeOrNullptr(nodes[1],left);  //A
-            subtrees[1] = getNodeOrNullptr(nodes[1],right); //B
-            subtrees[2] = getNodeOrNullptr(nodes[2],right); //C
-            subtrees[3] = getNodeOrNullptr(nodes[0],right); //D
+            subtrees[0] = nodes[1]->left;  //A
+            subtrees[1] = nodes[1]->right; //B
+            subtrees[2] = nodes[2]->right; //C
+            subtrees[3] = nodes[0]->right; //D
          } else {
             // Left-Right
             nodes[0] = node;
             nodes[1] = node->left;
-            nodes[2] = getNodeOrNullptr(nodes[1],right);
+            nodes[2] = nodes[1]->right;
 
-            subtrees[0] = getNodeOrNullptr(nodes[1],left);
-            subtrees[1] = getNodeOrNullptr(nodes[2],left);
-            subtrees[2] = getNodeOrNullptr(nodes[2],right);
-            subtrees[3] = getNodeOrNullptr(nodes[0],right);
+            subtrees[0] = nodes[1]->left;
+            subtrees[1] = nodes[2]->left;
+            subtrees[2] = nodes[2]->right;
+            subtrees[3] = nodes[0]->right;
          }
       } else if (lrFactor < -1) {
          // Right-Left or Right-Right
@@ -162,22 +161,22 @@ private:
             // Right-Right
             nodes[1] = node;
             nodes[2] = node->right;
-            nodes[0] = getNodeOrNullptr(nodes[2],right);
+            nodes[0] = nodes[2]->right;
 
-            subtrees[0] = getNodeOrNullptr(nodes[1],left);
-            subtrees[1] = getNodeOrNullptr(nodes[2],left);
-            subtrees[2] = getNodeOrNullptr(nodes[0],left);
-            subtrees[3] = getNodeOrNullptr(nodes[0],right);
+            subtrees[0] = nodes[1]->left;
+            subtrees[1] = nodes[2]->left;
+            subtrees[2] = nodes[0]->left;
+            subtrees[3] = nodes[0]->right;
          } else {
             // Right-Left
             nodes[1] = node;
             nodes[0] = node->right;
-            nodes[2] = getNodeOrNullptr(nodes[0],left);
+            nodes[2] = nodes[0]->left;
 
-            subtrees[0] = getNodeOrNullptr(nodes[1],left);
-            subtrees[1] = getNodeOrNullptr(nodes[2],left);
-            subtrees[2] = getNodeOrNullptr(nodes[2],right);
-            subtrees[3] = getNodeOrNullptr(nodes[0],right);
+            subtrees[0] = nodes[1]->left;
+            subtrees[1] = nodes[2]->left;
+            subtrees[2] = nodes[2]->right;
+            subtrees[3] = nodes[0]->right;
          }
       } else {
          balance(node->parent);
@@ -196,25 +195,25 @@ private:
          nodes[2]->parent = nodeParent;
       }
 
-      setOnlyNotNull(nodes[2],left,nodes[1]);
-      setOnlyNotNull(nodes[1],parent,nodes[2]);
-      setOnlyNotNull(nodes[2],right,nodes[0]);
-      setOnlyNotNull(nodes[0],parent,nodes[2]);
+      nodes[2]->left = nodes[1];
+      nodes[1]->parent = nodes[2];
+      nodes[2]->right = nodes[0];
+      nodes[0]->parent = nodes[2];
 
-      setOnlyNotNull(nodes[1],left,subtrees[0]);
+      nodes[1]->left = subtrees[0];
       setOnlyNotNull(subtrees[0],parent,nodes[1]);
-      setOnlyNotNull(nodes[1],right,subtrees[1]);
+      nodes[1]->right = subtrees[1];
       setOnlyNotNull(subtrees[1],parent,nodes[1]);
 
-      setOnlyNotNull(nodes[0],left,subtrees[2]);
+      nodes[0]->left = subtrees[2];
       setOnlyNotNull(subtrees[2],parent,nodes[0]);
-      setOnlyNotNull(nodes[0],right,subtrees[3]);
+      nodes[0]->right = subtrees[3];
       setOnlyNotNull(subtrees[3],parent,nodes[0]);
 
       updateHeightUpwards(nodes[1]);
       updateHeightUpwards(nodes[0]);
 
-      balance(getNodeOrNullptr(nodes[2],parent));
+      balance(nodes[2]->parent);
    };
 
 
@@ -304,7 +303,7 @@ public:
       Node* target = getNode(key, root);
       removeNode(target);
    };
-
+   
    // Given a callable, that takes a Key and Value, call that callable
    // for every key/value pair in the tree in sorted order.
    // e.g. callable(Key(), Value())
@@ -312,7 +311,7 @@ public:
    void for_each_key_val(const Callable& callable) {
       for_each_key_val(callable, root);
    };
-
+   
    void display(Node *ptr, int level)
    {
       int i;
